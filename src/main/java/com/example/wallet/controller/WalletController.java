@@ -16,7 +16,7 @@ public class WalletController {
     private final WalletService walletService;
 
     @PostMapping("/new")
-    public UUID createWallet() {
+    public AccountDto createWallet() {
         return walletService.createWallet();
     }
 

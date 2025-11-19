@@ -10,5 +10,5 @@ public interface WalletService {
 
     AccountDto getBalance(UUID walletUUID);
 
-    UUID createWallet();
+    AccountDto createWallet();
 }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -28,17 +29,25 @@ public class WalletServiceImpl implements WalletService {
         log.info("Operation with wallet {}", request);
         Account existAccount = getAccountIfExistOrElseThrow(request.getWalletId());
         if (OperationType.WITHDRAW.equals(request.getOperationType())) {
-            if (existAccount.getBalance().compareTo(request.getAmount()) < 0) {
-                String errorMessage = String.format("Wallet balance %s is less than the requested amount %s", existAccount.getBalance(), request.getAmount());
-                throw new LowBalanceException(errorMessage);
-            }
-            existAccount.setBalance(existAccount.getBalance().subtract(request.getAmount()));
-            walletRepository.save(existAccount);
+            withdrawOperation(request.getAmount(), existAccount);
         } else {
-            existAccount.setBalance(existAccount.getBalance().add(request.getAmount()));
-            walletRepository.save(existAccount);
+            depositOperation(request.getAmount(), existAccount);
         }
 
+    }
+
+    private void withdrawOperation(BigDecimal amount, Account existAccount) {
+        if (existAccount.getBalance().compareTo(amount) < 0) {
+            String errorMessage = String.format("Wallet balance %s is less than the requested amount %s", existAccount.getBalance(), amount);
+            throw new LowBalanceException(errorMessage);
+        }
+        existAccount.setBalance(existAccount.getBalance().subtract(amount));
+        walletRepository.save(existAccount);
+    }
+
+    private void depositOperation(BigDecimal amount, Account existAccount) {
+        existAccount.setBalance(existAccount.getBalance().add(amount));
+        walletRepository.save(existAccount);
     }
 
     @Override
@@ -50,10 +59,10 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public UUID createWallet() {
+    public AccountDto createWallet() {
         Account newAccount = new Account();
         Account created = walletRepository.save(newAccount);
-        return created.getId();
+        return mapper.accountToDto(created);
     }
 
     private Account getAccountIfExistOrElseThrow(UUID walletUUID) {
