@@ -6,7 +6,7 @@ import com.example.wallet.dto.AccountOperationRequestDto;
 import java.util.UUID;
 
 public interface WalletService {
-    void processOperation(AccountOperationRequestDto request);
+    AccountDto processOperation(AccountOperationRequestDto request);
 
     AccountDto getBalance(UUID walletUUID);
 

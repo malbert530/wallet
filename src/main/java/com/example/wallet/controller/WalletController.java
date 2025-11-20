@@ -21,8 +21,8 @@ public class WalletController {
     }
 
     @PostMapping
-    public void performOperation(@Valid @RequestBody AccountOperationRequestDto request) {
-        walletService.processOperation(request);
+    public AccountDto performOperation(@Valid @RequestBody AccountOperationRequestDto request) {
+        return walletService.processOperation(request);
     }
 
     @GetMapping("/{walletUUID}")

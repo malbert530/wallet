@@ -25,29 +25,29 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     @Transactional
-    public void processOperation(AccountOperationRequestDto request) {
+    public AccountDto processOperation(AccountOperationRequestDto request) {
         log.info("Operation with wallet {}", request);
         Account existAccount = getAccountIfExistOrElseThrow(request.getWalletId());
         if (OperationType.WITHDRAW.equals(request.getOperationType())) {
-            withdrawOperation(request.getAmount(), existAccount);
+            return withdrawOperation(request.getAmount(), existAccount);
         } else {
-            depositOperation(request.getAmount(), existAccount);
+            return depositOperation(request.getAmount(), existAccount);
         }
 
     }
 
-    private void withdrawOperation(BigDecimal amount, Account existAccount) {
+    private AccountDto withdrawOperation(BigDecimal amount, Account existAccount) {
         if (existAccount.getBalance().compareTo(amount) < 0) {
             String errorMessage = String.format("Wallet balance %s is less than the requested amount %s", existAccount.getBalance(), amount);
             throw new LowBalanceException(errorMessage);
         }
         existAccount.setBalance(existAccount.getBalance().subtract(amount));
-        walletRepository.save(existAccount);
+        return mapper.accountToDto(walletRepository.save(existAccount));
     }
 
-    private void depositOperation(BigDecimal amount, Account existAccount) {
+    private AccountDto depositOperation(BigDecimal amount, Account existAccount) {
         existAccount.setBalance(existAccount.getBalance().add(amount));
-        walletRepository.save(existAccount);
+        return mapper.accountToDto(walletRepository.save(existAccount));
     }
 
     @Override
